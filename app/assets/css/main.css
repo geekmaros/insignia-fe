@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "./font.css";
+
+@theme static {
+  --font-sans: 'Overused Grotesk', sans-serif;
+  --color-primary: #84d94d;
+
+  --color-green-50: #f2fce9;
+  --color-green-100: #e2f8cf;
+  --color-green-200: #c6f1a5;
+  --color-green-300: #a0e670;
+  --color-green-400: #84d94d;
+  --color-green-500: #5ebd25;
+  --color-green-600: #47961a;
+  --color-green-700: #377318;
+  --color-green-800: #2f5b19;
+  --color-green-900: #2a4e19;
+  --color-green-950: #122b08;
+
+  --color-orange-50: #fff8eb;
+  --color-orange-100: #ffecc6;
+  --color-orange-200: #ffd688;
+  --color-orange-300: #ffb843;
+  --color-orange-400: #ffa120;
+  --color-orange-500: #f97c07;
+  --color-orange-600: #dd5802;
+  --color-orange-700: #b73a06;
+  --color-orange-800: #942c0c;
+  --color-orange-900: #7a250d;
+  --color-orange-950: #461002;
+
+
+  --color-gray-50: #EAEAEB;
+  --color-gray-100: #EAEAEB;
+  --color-gray-200: #D4D5D6;
+  --color-gray-300: #BFC0C2;
+  --color-gray-400: #A9ABAD;
+  --color-gray-500: #949699;
+  --color-gray-600: #7F8184;
+  --color-gray-700: #696c70;
+  --color-gray-800: #54575B;
+  --color-gray-900: #3E4247;
+  --color-gray-950: #292D32;
+
+
+}
+
+
+@layer utilities {
+  .auth-title {
+    @apply text-center text-2xl font-semibold leading-tight text-gray-950;
+  }
+
+  .auth-subtitle {
+    @apply text-center text-sm font-medium text-gray-500;
+  }
+
+  .auth-link-text {
+    @apply text-center text-sm font-medium text-gray-950;
+  }
+
+  .auth-link {
+    @apply text-center text-sm font-semibold text-primary;
+  }
+
+}

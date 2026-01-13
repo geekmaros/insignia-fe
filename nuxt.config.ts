@@ -1,8 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    '@nuxt/pinia'
   ],
 
   devtools: {
@@ -13,6 +15,11 @@ export default defineNuxtConfig({
 
   ui: {
     colorMode: false // Disables the @nuxtjs/color-mode module integration
+  },
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: import.meta.env.NUXT_PUBLIC_API_BASE_URL
+    }
   },
 
   routeRules: {

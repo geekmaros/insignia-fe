@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import type * as z from 'zod'
+import { storeToRefs } from 'pinia'
 import { signupSchema } from '~/schema/auth.schema'
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
+import { useAuthStore } from '~/stores/auth'
+
+const authStore = useAuthStore()
+const { loading } = storeToRefs(authStore)
+const router = useRouter()
 
 definePageMeta({
   layout: 'auth'
@@ -16,10 +22,54 @@ const state = reactive<Partial<Schema>>({
   confirm_password: ''
 })
 
+const formErrors = ref<FormError[]>([])
 const toast = useToast()
+
+function resolveErrorMessage(error: unknown) {
+  if (typeof error === 'string') {
+    return error
+  }
+
+  if (error && typeof error === 'object') {
+    const { data, statusMessage, message } = error as {
+      data?: { message?: string }
+      statusMessage?: string
+      message?: string
+    }
+
+    return data?.message || statusMessage || message || 'Unable to create account. Please try again.'
+  }
+
+  return 'Unable to create account. Please try again.'
+}
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
-  console.log(event.data)
+  formErrors.value = []
+
+  try {
+    await authStore.signup({
+      name: event.data.name,
+      email: event.data.email,
+      password: event.data.password
+    })
+
+    toast.add({
+      title: 'Account created',
+      description: 'Redirecting you to the dashboard.',
+      color: 'success'
+    })
+
+    await router.push('/dashboard')
+  } catch (error) {
+    const message = resolveErrorMessage(error)
+    formErrors.value = [{ message }]
+
+    toast.add({
+      title: 'Registration failed',
+      description: message,
+      color: 'error'
+    })
+  }
 }
 </script>
 
@@ -43,6 +93,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UForm
         :schema="signupSchema"
         :state="state"
+        :errors="formErrors"
         class="space-y-2"
         @submit="onSubmit"
       >
@@ -77,6 +128,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         >
           <UInput
             v-model="state.password"
+            type="password"
             class="w-full"
           />
         </UFormField>
@@ -88,6 +140,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         >
           <UInput
             v-model="state.confirm_password"
+            type="password"
             class="w-full"
           />
         </UFormField>
@@ -97,6 +150,8 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             class="font-semibold w-full text-gray-950 text-center flex items-center justify-center cursor-pointer"
             type="submit"
             size="xl"
+            :loading="loading"
+            :disabled="loading"
           >
             Create account
           </UButton>

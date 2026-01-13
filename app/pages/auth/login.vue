@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type * as z from 'zod'
-import { signInSchema } from '~/schema/auth.schema'
+import { storeToRefs } from 'pinia'
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
+import { useAuthStore } from '~/stores/auth'
+import { signInSchema } from '~/schema/auth.schema'
+import { resolveErrorMessage } from '~/utils/resolveErrorMessage'
 
 definePageMeta({
   layout: 'auth'
@@ -9,15 +12,44 @@ definePageMeta({
 
 type Schema = z.output<typeof signInSchema>
 
+const authStore = useAuthStore()
+const { loading } = storeToRefs(authStore)
+const router = useRouter()
+
 const state = reactive<Partial<Schema>>({
   email: '',
   password: ''
 })
 
 const toast = useToast()
+const formErrors = ref<FormError[]>([])
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
-  console.log(event.data)
+  formErrors.value = []
+
+  try {
+    await authStore.login({
+      email: event.data.email,
+      password: event.data.password
+    })
+
+    toast.add({
+      title: 'Welcome back',
+      description: 'Taking you to your dashboard.',
+      color: 'success'
+    })
+
+    await router.push('/app/dashboard')
+  } catch (error) {
+    const message = resolveErrorMessage(error, 'Unable to sign in. Please check your credentials.')
+    formErrors.value = [{ message }]
+
+    toast.add({
+      title: 'Login failed',
+      description: message,
+      color: 'error'
+    })
+  }
 }
 </script>
 
@@ -41,6 +73,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       <UForm
         :schema="signInSchema"
         :state="state"
+        :errors="formErrors"
         class="space-y-2"
         @submit="onSubmit"
       >
@@ -62,6 +95,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         >
           <UInput
             v-model="state.password"
+            type="password"
             class="w-full"
           />
         </UFormField>
@@ -71,8 +105,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             class="font-semibold w-full text-gray-950 text-center flex items-center justify-center cursor-pointer"
             type="submit"
             size="xl"
+            :loading="loading"
+            :disabled="loading"
           >
-            Create account
+            Sign in
           </UButton>
 
           <UButton

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type * as z from 'zod'
 import { storeToRefs } from 'pinia'
-import { signupSchema } from '~/schema/auth.schema'
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
 import { useAuthStore } from '~/stores/auth'
+import { signupSchema } from '~/schema/auth.schema'
+import { resolveErrorMessage } from '~/utils/resolveErrorMessage'
 
 const authStore = useAuthStore()
 const { loading } = storeToRefs(authStore)
@@ -25,24 +26,6 @@ const state = reactive<Partial<Schema>>({
 const formErrors = ref<FormError[]>([])
 const toast = useToast()
 
-function resolveErrorMessage(error: unknown) {
-  if (typeof error === 'string') {
-    return error
-  }
-
-  if (error && typeof error === 'object') {
-    const { data, statusMessage, message } = error as {
-      data?: { message?: string }
-      statusMessage?: string
-      message?: string
-    }
-
-    return data?.message || statusMessage || message || 'Unable to create account. Please try again.'
-  }
-
-  return 'Unable to create account. Please try again.'
-}
-
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   formErrors.value = []
 
@@ -59,9 +42,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: 'success'
     })
 
-    await router.push('/dashboard')
+    await router.push('/app/dashboard')
   } catch (error) {
-    const message = resolveErrorMessage(error)
+    const message = resolveErrorMessage(error, 'Unable to create account. Please try again.')
     formErrors.value = [{ message }]
 
     toast.add({

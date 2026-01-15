@@ -149,7 +149,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UDashboardGroup unit="rem">
+  <UDashboardGroup
+    unit="rem"
+  >
     <UDashboardSidebar
       id="default"
       v-model:open="open"

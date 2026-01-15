@@ -46,7 +46,9 @@
 
 }
 
+@layer base {
 
+}
 @layer utilities {
   .auth-title {
     @apply text-center text-2xl font-semibold leading-tight text-gray-950;
@@ -63,5 +65,16 @@
   .auth-link {
     @apply text-center text-sm font-semibold text-primary;
   }
+
+  .side-bar-link-label {
+    @apply text-xs uppercase font-medium text-gray-600 mb-4;
+  }
+  .side-menu-link:not(:last-child) {
+    @apply mb-3;
+  }
+  .side-menu-link{
+    @apply  h-[43px] text-base font-medium
+  }
+
 
 }

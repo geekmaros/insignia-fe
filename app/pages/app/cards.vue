@@ -9,6 +9,8 @@ definePageMeta({
     <UDashboardSidebarCollapse />
 
     <UDashboardSidebarToggle />
+
+    Cards proposed page
   </main>
 </template>
 

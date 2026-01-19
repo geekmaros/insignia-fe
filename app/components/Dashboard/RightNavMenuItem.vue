@@ -48,17 +48,14 @@ const items = [[{
       color="neutral"
       variant="outline"
     >
-      <UAvatar
-        icon="i-custom-user"
-        src="https://github.com/benjamincanac.png"
-        size="md"
+      <UUser
+        name="John Doe"
+        description="Software Engineer"
+        :avatar="{
+          src: 'https://i.pravatar.cc/150?u=john-doe',
+          icon: 'i-lucide-image'
+        }"
       />
-      <div class="profile-name flex flex-col items-start ">
-        <span class="font-semibold text-gray-950 text-base">
-          Abdulrasaq Mustapha
-        </span>
-        <span class="text-gray-600  text-xs">geekmaros@gmail.com</span>
-      </div>
     </UButton>
   </UDropdownMenu>
 </template>

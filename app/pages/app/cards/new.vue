@@ -1,20 +1,49 @@
 <script setup lang="ts">
-import type { AddLinkOption } from '~/components/Cards/addLinkData'
+import { computed } from 'vue'
+import type { CardPreviewData, CardTemplate, SelectedLinkOption } from '~/types/card'
 
 definePageMeta({
   layout: 'app'
 })
 
-type SelectedLinkOption = AddLinkOption & { id: string }
-
 const selectedLinks = ref<SelectedLinkOption[]>([])
+const cardTemplate = ref<CardTemplate>('classic')
+const DEFAULT_ACCENT = '#0F172A'
+const previewState = ref<CardPreviewData>({
+  basic: {},
+  customization: {
+    accentColor: DEFAULT_ACCENT
+  }
+})
+
+const previewCard = computed<CardPreviewData>(() => ({
+  basic: previewState.value.basic,
+  customization: {
+    accentColor: previewState.value.customization?.accentColor || DEFAULT_ACCENT
+  },
+  links: selectedLinks.value
+}))
 
 function handleSelectedLinksUpdate(links: SelectedLinkOption[]) {
   selectedLinks.value = links
 }
 
-function handleRemoveLink(id: string) {
-  selectedLinks.value = selectedLinks.value.filter(link => link.id !== id)
+function handleRemoveLink(id: string | number) {
+  const removeKey = String(id)
+  selectedLinks.value = selectedLinks.value.filter(link => link.id !== removeKey)
+}
+
+function handleTemplateChange(template: CardTemplate) {
+  cardTemplate.value = template
+}
+
+function handlePreviewChange(next: CardPreviewData) {
+  previewState.value = {
+    basic: next.basic,
+    customization: {
+      accentColor: next.customization?.accentColor || DEFAULT_ACCENT
+    }
+  }
 }
 
 const items = ref([
@@ -89,14 +118,30 @@ const items = ref([
           @update:selected-links="handleSelectedLinksUpdate"
         />
 
-        <!--        Presentation ID card section -->
         <UPageCard
-          title="Tailwind CSS"
-          class="rounded-none"
-        />
+          class="rounded-none flex flex-col"
+          :ui="{
+            header: 'border-b border-[#E7E7E7] px-6 py-4',
+            body: 'p-6 flex justify-center'
+          }"
+        >
+          <template #header>
+            <span class="text-sm font-medium text-gray-900">Live Preview</span>
+          </template>
+
+          <template #body>
+            <CardsCardPreview
+              class="w-full max-w-sm"
+              :template="cardTemplate"
+              :card="previewCard"
+            />
+          </template>
+        </UPageCard>
         <CardsCustomizeCard
           :selected-links="selectedLinks"
           @remove-link="handleRemoveLink"
+          @template-change="handleTemplateChange"
+          @preview-change="handlePreviewChange"
         />
       </UPageGrid>
     </template>

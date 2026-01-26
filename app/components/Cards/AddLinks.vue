@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { ADD_LINK_DATA } from '~/components/Cards/addLinkData'
 import type { AddLinkOption } from '~/components/Cards/addLinkData'
+import type { SelectedLinkOption } from '~/types/card'
 
 type LinkOption = AddLinkOption
-type SelectedLinkOption = LinkOption & { id: string }
 
 const props = defineProps<{
   selectedLinks?: SelectedLinkOption[]

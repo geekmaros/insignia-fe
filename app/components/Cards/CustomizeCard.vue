@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { toRef, useTemplateRef } from 'vue'
-import type { TabsItem } from '@nuxt/ui'
+import { computed, toRef, useTemplateRef } from 'vue'
+import type { RadioGroupItem, TabsItem } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
 
 import type { z } from 'zod'
 import { cardSchema } from '~/schema/card.schema'
-import type { AddLinkOption } from '~/components/Cards/addLinkData'
+import type { CardPreviewData, CardTemplate, SelectedLinkOption } from '~/types/card'
 
 const el = useTemplateRef('el')
 
@@ -24,14 +24,13 @@ const items = ref<TabsItem[]>([
   }
 ])
 
-const templateOptions = [
+const templateOptions = ref<RadioGroupItem[]>([
   { label: 'Classic', value: 'classic' },
   { label: 'Minimal', value: 'minimal' },
   { label: 'Bold', value: 'bold' }
-]
+])
 
 type Schema = z.infer<typeof cardSchema>
-type SelectedLinkOption = AddLinkOption & { id: string }
 type LinkState = Schema['links'][number]
 type LinkEntry = { link: LinkState, meta: SelectedLinkOption }
 
@@ -40,7 +39,9 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (event: 'remove-link', id: SelectedLinkOption['id']): void
+  (event: 'remove-link', id: string | number): void
+  (event: 'template-change', template: CardTemplate): void
+  (event: 'preview-change', preview: CardPreviewData): void
 }>()
 
 const selectedLinkOptions = computed<SelectedLinkOption[]>(() => props.selectedLinks ?? [])
@@ -58,7 +59,7 @@ const state = reactive<Schema>({
   },
   links: [],
   customization: {
-    template: '',
+    template: 'classic',
     color: '',
     logo: '',
     profileImage: ''
@@ -88,9 +89,7 @@ const removeLink = (entry: LinkEntry) => {
     state.links.splice(index, 1)
   }
 
-  if (removeId) {
-    emit('remove-link', removeId)
-  }
+  emit('remove-link', removeId)
 }
 
 watch(
@@ -123,6 +122,36 @@ watch(
     state.links.splice(0, state.links.length, ...nextLinks)
   },
   { immediate: true, deep: true } // ✅ THIS
+)
+
+const templateFallback: CardTemplate = 'classic'
+
+const previewData = computed<CardPreviewData>(() => ({
+  basic: {
+    name: state.basic.name,
+    title: state.basic.title,
+    company: state.basic.company
+  },
+  customization: {
+    accentColor: state.customization.color
+  }
+}))
+
+watch(
+  previewData,
+  preview => emit('preview-change', preview),
+  { deep: true, immediate: true }
+)
+
+watch(
+  () => state.customization.template,
+  (template) => {
+    const normalized = (template === 'minimal' || template === 'bold' || template === 'classic')
+      ? template
+      : templateFallback
+    emit('template-change', normalized)
+  },
+  { immediate: true }
 )
 const linksRef = toRef(state, 'links')
 const { start, stop } = useSortable(el, linksRef, {
@@ -356,9 +385,9 @@ watch(el, (element) => {
                 class="text-sm"
                 name="customization.template"
               >
-                <USelect
+                <URadioGroup
                   v-model="state.customization.template"
-                  :options="templateOptions"
+                  :items="templateOptions"
                   placeholder="Select a template"
                   class="w-full"
                 />
@@ -370,11 +399,12 @@ watch(el, (element) => {
                 class="text-sm"
                 name="customization.color"
               >
-                <UInput
-                  v-model="state.customization.color"
-                  placeholder="#121212"
-                  class="w-full placeholder:text-xs"
-                />
+                <!--                <UInput -->
+                <!--                  v-model="state.customization.color" -->
+                <!--                  placeholder="#121212" -->
+                <!--                  class="w-full placeholder:text-xs" -->
+                <!--                /> -->
+                <UColorPicker v-model="state.customization.color" />
               </UFormField>
 
               <UFormField

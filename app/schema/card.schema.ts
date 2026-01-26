@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const linkInputSchema = z.object({
-  id: z.number().int().positive().optional(),
+  id: z.union([z.string().min(1), z.number().int().positive()]).optional(),
   type: z.string().trim().max(30),
   label: z.string().trim().max(50).optional(),
   value: z.string().trim().max(255),

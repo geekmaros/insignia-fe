@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+import { useAuthStore } from '~/stores/auth'
 import NotificationSlideover from '~/components/NotificationSlideover.vue'
 
 const route = useRoute()
 const toast = useToast()
+const authStore = useAuthStore()
+
+await authStore.fetchProfile()
 
 const open = ref(false)
 
@@ -122,9 +126,10 @@ const groups = computed(() => [{
   }]
 }])
 
-onMounted(async () => {
-  const cookie = useCookie('cookie-consent')
-  if (cookie.value === 'accepted') {
+const cookieConsent = useCookie('cookie-consent')
+
+onMounted(() => {
+  if (cookieConsent.value === 'accepted') {
     return
   }
 
@@ -137,7 +142,7 @@ onMounted(async () => {
       color: 'neutral',
       variant: 'outline',
       onClick: () => {
-        cookie.value = 'accepted'
+        cookieConsent.value = 'accepted'
       }
     }, {
       label: 'Opt out',

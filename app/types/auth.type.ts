@@ -1,10 +1,11 @@
 export interface AuthUser {
   id: string
   email: string
-  firstName?: string
-  lastName?: string
+  name?: string
   avatarUrl?: string
   role?: 'user' | 'admin'
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface AuthResponse {

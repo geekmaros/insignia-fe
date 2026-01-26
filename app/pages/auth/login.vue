@@ -33,11 +33,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       password: event.data.password
     })
 
-    toast.add({
-      title: 'Welcome back',
-      description: 'Taking you to your dashboard.',
-      color: 'success'
-    })
+    // toast.add({
+    //   title: 'Welcome back',
+    //   description: 'Taking you to your dashboard.',
+    //   color: 'success'
+    // })
 
     await router.push('/app/dashboard')
   } catch (error) {

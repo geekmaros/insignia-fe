@@ -76,6 +76,10 @@
     @apply  h-[43px] text-base font-medium
   }
 
-
+  .card-link-option{
+    border-style: dashed;
+    border-color: #BFC0C2;
+    border-width: 0.5px;
+  }
 
 }

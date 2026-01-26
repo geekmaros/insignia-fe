@@ -64,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     loading.value = true
     try {
-      const profile = await useApi<AuthUser>('/auth/me')
+      const profile = await useApi<AuthUser>('/users/profile/me')
       user.value = profile
       return profile
     } finally {

@@ -7,6 +7,8 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (to.path.startsWith('/auth') && token.value) {
+    // fetch uer profile
+
     return navigateTo('/app/dashboard')
   }
 })

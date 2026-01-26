@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import type CardsAddLinks from '~/components/Cards/AddLinks.vue'
+
 definePageMeta({
   layout: 'app'
 })
+
+const addLinksRef = ref<InstanceType<typeof CardsAddLinks> | null>(null)
+const selectedLinks = computed(
+  () => addLinksRef.value?.selectedLinks ?? []
+)
 
 const items = ref([
   {
@@ -70,15 +77,12 @@ const items = ref([
       #body
     >
       <UPageGrid class="gap-0 h-full">
-        <CardsAddLinks />
+        <CardsAddLinks ref="addLinksRef" />
         <UPageCard
           title="Tailwind CSS"
           class="rounded-none"
         />
-        <UPageCard
-          title="Tailwind CSS"
-          class="rounded-none"
-        />
+        <CardsCustomizeCard :selected-links="selectedLinks" />
       </UPageGrid>
     </template>
   </UDashboardPanel>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { useAuthStore } from '~/stores/auth'
 
 const { isNotificationsSlideoverOpen } = useDashboard()
+
+const { user } = useAuthStore()
 
 const items = [[{
   label: 'New mail',
@@ -49,7 +52,7 @@ const items = [[{
       variant="outline"
     >
       <UUser
-        name="John Doe"
+        :name="user?.name || 'User'"
         description="Software Engineer"
         :avatar="{
           src: 'https://i.pravatar.cc/150?u=john-doe',

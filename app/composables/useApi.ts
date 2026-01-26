@@ -48,20 +48,34 @@ export async function useApi<T>(
       headers
     })
   } catch (error: unknown) {
-    const normalizedError = error as NormalizedFetchError
+    const e = error as NormalizedFetchError
     const statusCode
-      = normalizedError.statusCode
-        || normalizedError.response?.status
+      = e.statusCode
+        || e.response?.status
         || 500
-    const statusMessage
-      = normalizedError.data?.message
-        || normalizedError.response?._data?.message
-        || normalizedError.message
+
+    const message
+      = e.data?.message
+        || e.response?._data?.message
+        || e.message
         || 'Unexpected error'
 
+    // 🔑 HANDLE 401 HERE — NOT via error.vue
+    if (statusCode === 401) {
+      tokenCookie.value = null
+
+      if (import.meta.client) {
+        return navigateTo('/auth/login')
+      }
+
+      // SSR-safe fallback
+      return
+    }
+
+    // All other errors → error.vue
     throw createError({
       statusCode,
-      statusMessage
+      statusMessage: message
     })
   }
 }

@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import type CardsAddLinks from '~/components/Cards/AddLinks.vue'
+import type { AddLinkOption } from '~/components/Cards/addLinkData'
 
 definePageMeta({
   layout: 'app'
 })
 
-const addLinksRef = ref<InstanceType<typeof CardsAddLinks> | null>(null)
-const selectedLinks = computed(
-  () => addLinksRef.value?.selectedLinks ?? []
-)
+type SelectedLinkOption = AddLinkOption & { id: string }
+
+const selectedLinks = ref<SelectedLinkOption[]>([])
+
+function handleSelectedLinksUpdate(links: SelectedLinkOption[]) {
+  selectedLinks.value = links
+}
+
+function handleRemoveLink(id: string) {
+  selectedLinks.value = selectedLinks.value.filter(link => link.id !== id)
+}
 
 const items = ref([
   {
@@ -77,12 +84,20 @@ const items = ref([
       #body
     >
       <UPageGrid class="gap-0 h-full">
-        <CardsAddLinks ref="addLinksRef" />
+        <CardsAddLinks
+          :selected-links="selectedLinks"
+          @update:selected-links="handleSelectedLinksUpdate"
+        />
+
+        <!--        Presentation ID card section -->
         <UPageCard
           title="Tailwind CSS"
           class="rounded-none"
         />
-        <CardsCustomizeCard :selected-links="selectedLinks" />
+        <CardsCustomizeCard
+          :selected-links="selectedLinks"
+          @remove-link="handleRemoveLink"
+        />
       </UPageGrid>
     </template>
   </UDashboardPanel>

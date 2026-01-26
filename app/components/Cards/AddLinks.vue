@@ -1,30 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { ADD_LINK_DATA } from '~/components/Cards/addLinkData'
+import type { AddLinkOption } from '~/components/Cards/addLinkData'
 
-type LinkOption = (typeof ADD_LINK_DATA)[number]
+type LinkOption = AddLinkOption
+type SelectedLinkOption = LinkOption & { id: string }
 
-const selectedLinks = ref<LinkOption[]>([])
+const props = defineProps<{
+  selectedLinks?: SelectedLinkOption[]
+}>()
+
+const emit = defineEmits<{
+  (event: 'update:selected-links', links: SelectedLinkOption[]): void
+}>()
+
+const selectedLinks = computed(() => props.selectedLinks ?? [])
 
 function toggleLink(link: LinkOption) {
-  // const existingIndex = selectedLinks.value.findIndex(selected => selected.value === link.value)
-  // if (existingIndex === -1) {
-  selectedLinks.value.push({
-    ...link,
-    id: crypto.randomUUID()
-  })
-  //   return
-  // }
-
-  // selectedLinks.value.splice(existingIndex, 1)
+  emit('update:selected-links', [
+    ...selectedLinks.value,
+    {
+      ...link,
+      id: crypto.randomUUID()
+    }
+  ])
 }
 
 function isSelected(value: LinkOption['value']) {
   return selectedLinks.value.some(link => link.value === value)
 }
-
-defineExpose({
-  selectedLinks
-})
 </script>
 
 <template>

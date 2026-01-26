@@ -5,6 +5,7 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 
 import type { z } from 'zod'
 import { cardSchema } from '~/schema/card.schema'
+import type { AddLinkOption } from '~/components/Cards/addLinkData'
 
 const el = useTemplateRef('el')
 
@@ -30,7 +31,7 @@ const templateOptions = [
 ]
 
 type Schema = z.infer<typeof cardSchema>
-type SelectedLinkOption = { label: string, value: string, icon: string, placeholder: string }
+type SelectedLinkOption = AddLinkOption & { id: string }
 type LinkState = Schema['links'][number]
 type LinkEntry = { link: LinkState, meta: SelectedLinkOption }
 
@@ -38,7 +39,11 @@ const props = defineProps<{
   selectedLinks?: SelectedLinkOption[]
 }>()
 
-const selectedLinkOptions = computed(() => props.selectedLinks ?? [])
+const emit = defineEmits<{
+  (event: 'remove-link', id: SelectedLinkOption['id']): void
+}>()
+
+const selectedLinkOptions = computed<SelectedLinkOption[]>(() => props.selectedLinks ?? [])
 
 const state = reactive<Schema>({
   basic: {
@@ -75,25 +80,42 @@ const linkEntries = computed<LinkEntry[]>(() => {
     .filter((entry): entry is LinkEntry => Boolean(entry))
 })
 
-// const removeLink = (link: LinkEntry) => {
-// //  Remove link
-//
-// }
+const removeLink = (entry: LinkEntry) => {
+  const removeId = entry.link.id ?? entry.link.type
+
+  const index = state.links.findIndex(link => (link.id ?? link.type) === removeId)
+  if (index !== -1) {
+    state.links.splice(index, 1)
+  }
+
+  if (removeId) {
+    emit('remove-link', removeId)
+  }
+}
 
 watch(
   selectedLinkOptions,
   (linkOptions = []) => {
-    const existingByType = new Map(
-      state.links.map(link => [link.type, link])
+    const existingById = new Map(
+      state.links.map(link => [link.id ?? link.type, link])
     )
 
     const nextLinks = linkOptions.map((option, index) => {
-      const existing = existingByType.get(option.value)
+      const key = option.id ?? option.value
+      const existing = existingById.get(key)
+
+      if (existing) {
+        return {
+          ...existing,
+          position: index
+        }
+      }
+
       return {
-        id: crypto.randomUUID(),
+        id: key,
         type: option.value,
-        label: existing?.label,
-        value: existing?.value ?? '',
+        label: '',
+        value: '',
         position: index
       }
     })
@@ -264,8 +286,7 @@ watch(el, (element) => {
               >
                 <div
                   v-for="entry in linkEntries"
-
-                  :key="entry.link.type"
+                  :key="entry.link.id ?? entry.link.type"
                   class="flex flex-col bg-white border border-[#e7e7e7] rounded-[12px] px-3 py-2 text-sm"
                 >
                   <div class="header flex flex-1 justify-between items-center">

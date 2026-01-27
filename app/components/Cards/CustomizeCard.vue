@@ -83,8 +83,9 @@ const linkEntries = computed<LinkEntry[]>(() => {
 
 const removeLink = (entry: LinkEntry) => {
   const removeId = entry.link.id ?? entry.link.type
+  const removeKey = String(removeId)
 
-  const index = state.links.findIndex(link => (link.id ?? link.type) === removeId)
+  const index = state.links.findIndex(link => String(link.id ?? link.type) === removeKey)
   if (index !== -1) {
     state.links.splice(index, 1)
   }
@@ -96,11 +97,11 @@ watch(
   selectedLinkOptions,
   (linkOptions = []) => {
     const existingById = new Map(
-      state.links.map(link => [link.id ?? link.type, link])
+      state.links.map(link => [String(link.id ?? link.type), link])
     )
 
     const nextLinks = linkOptions.map((option, index) => {
-      const key = option.id ?? option.value
+      const key = String(option.id ?? option.value)
       const existing = existingById.get(key)
 
       if (existing) {
@@ -179,8 +180,23 @@ const getStateSnapshot = () => ({
   customization: { ...state.customization }
 })
 
+const setStateSnapshot = (next: Partial<Schema>) => {
+  if (next.basic) {
+    Object.assign(state.basic, next.basic)
+  }
+
+  if (Array.isArray(next.links)) {
+    state.links.splice(0, state.links.length, ...next.links.map(link => ({ ...link })))
+  }
+
+  if (next.customization) {
+    Object.assign(state.customization, next.customization)
+  }
+}
+
 defineExpose({
-  getStateSnapshot
+  getStateSnapshot,
+  setStateSnapshot
 })
 </script>
 

@@ -60,16 +60,18 @@ export async function useApi<T>(
         || e.message
         || 'Unexpected error'
 
-    // 🔑 HANDLE 401 HERE — NOT via error.vue
+    // 🔑 HANDLE 401 HERE — redirect & surface error to caller
     if (statusCode === 401) {
       tokenCookie.value = null
 
       if (import.meta.client) {
-        return navigateTo('/auth/login')
+        await navigateTo('/auth/login')
       }
 
-      // SSR-safe fallback
-      return
+      throw createError({
+        statusCode,
+        statusMessage: message || 'Unauthorized'
+      })
     }
 
     // All other errors → error.vue

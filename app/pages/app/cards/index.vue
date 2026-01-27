@@ -11,6 +11,10 @@ definePageMeta({
     <UDashboardSidebarToggle />
 
     All Cards proposed page
+
+    <UButton to="/app/cards/new">
+      Add New Card
+    </UButton>
   </main>
 </template>
 

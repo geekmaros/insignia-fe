@@ -4,6 +4,21 @@ export default defineAppConfig({
       primary: 'green',
       neutral: 'slate'
     },
+    toast: {
+      variants: {
+        color: {
+          success: {
+            root: 'bg-green-100 dark:bg-green-950 focus-visible:ring-success',
+            icon: 'text-success'
+          },
+          error: {
+            root: 'bg-red-100 dark:bg-red-950 focus-visible:ring-error',
+            icon: 'text-error'
+          }
+          // Add others as needed
+        }
+      }
+    },
     navigationMenu: {
       compoundVariants: [
         {

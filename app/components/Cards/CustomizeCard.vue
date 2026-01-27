@@ -42,6 +42,8 @@ const emit = defineEmits<{
   (event: 'remove-link', id: string | number): void
   (event: 'template-change', template: CardTemplate): void
   (event: 'preview-change', preview: CardPreviewData): void
+  (event: 'invalid-links-detected'): void
+  (event: 'links-valid'): void
 }>()
 
 const selectedLinkOptions = computed<SelectedLinkOption[]>(() => props.selectedLinks ?? [])
@@ -112,7 +114,7 @@ watch(
       }
 
       return {
-        id: key,
+        id: option.persistedId ?? option.id ?? option.value,
         type: option.value,
         label: '',
         value: '',
@@ -123,6 +125,26 @@ watch(
     state.links.splice(0, state.links.length, ...nextLinks)
   },
   { immediate: true, deep: true } // ✅ THIS
+)
+
+const linksValid = ref(true)
+
+watch(
+  () => state.links,
+  (currentLinks) => {
+    const hasEmpty = currentLinks.some(link => !link.value?.trim())
+    if (hasEmpty !== linksValid.value) {
+      linksValid.value = !hasEmpty
+
+      if (hasEmpty) {
+        emit('invalid-links-detected')
+      }
+      else {
+        emit('links-valid')
+      }
+    }
+  },
+  { deep: true }
 )
 
 const templateFallback: CardTemplate = 'classic'
@@ -202,7 +224,7 @@ defineExpose({
 
 <template>
   <UPageCard
-    class="rounded-none h-full overflow-y-scroll "
+    class="rounded-none lg:h-full lg:overflow-y-auto"
     :ui="{
       container: 'px-0 sm:px-0 h-full',
       header: 'font-medium text-gray-950 text-sm capitalize border-b border-[#e7e7e7] w-full px-6 pb-3',

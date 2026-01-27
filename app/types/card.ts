@@ -2,7 +2,7 @@ import type { AddLinkOption } from '~/components/Cards/addLinkData'
 
 export type CardTemplate = 'classic' | 'minimal' | 'bold'
 
-export type SelectedLinkOption = AddLinkOption & { id: string }
+export type SelectedLinkOption = AddLinkOption & { id: string, persistedId?: number }
 
 export interface CardPreviewBasic {
   name?: string

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue'
+import { computed, watch, watchEffect } from 'vue'
 import type { z } from 'zod'
 import { cardSchema } from '~/schema/card.schema'
 import { getMyCard, updateCard } from '@/services/cards.service'
@@ -35,6 +35,7 @@ const customizeCardRef = ref<{
   setStateSnapshot: (next: Partial<CardFormState>) => void
 } | null>(null)
 const isSaving = ref(false)
+const hasInvalidLinks = ref(false)
 
 const { data: cardData, pending, error, refresh } = await useAsyncData('card-edit', () => getMyCard(cardId.value), {
   watch: [cardId]
@@ -44,10 +45,30 @@ const resolveLinkMeta = (type: string) => {
   return ADD_LINK_DATA.find(option => option.value === type)
 }
 
+const lastHydratedState = ref<{ cardId: string, updatedAt?: string | null } | null>(null)
+
+watch(cardId, () => {
+  lastHydratedState.value = null
+})
+
 watchEffect(() => {
   const card = cardData.value
   const customizeCard = customizeCardRef.value
   if (!card || !customizeCard) return
+
+  const previous = lastHydratedState.value
+  const cardUpdatedAt = card.updatedAt ?? null
+  const shouldHydrate
+    = !previous
+      || previous.cardId !== cardId.value
+      || previous.updatedAt !== cardUpdatedAt
+
+  if (!shouldHydrate) return
+
+  lastHydratedState.value = {
+    cardId: cardId.value,
+    updatedAt: cardUpdatedAt
+  }
 
   const snapshot: Partial<CardFormState> = {
     basic: {
@@ -81,9 +102,10 @@ watchEffect(() => {
     const meta = resolveLinkMeta(link.type)
     return {
       id: String(link.id ?? crypto.randomUUID()),
+      persistedId: typeof link.id === 'number' ? link.id : undefined,
       label: meta?.label ?? (link.label || link.type),
       icon: meta?.icon ?? 'i-links-link',
-      value: meta?.value ?? link.type,
+      value: link.type,
       placeholder: meta?.placeholder ?? 'https://example.com'
     }
   })
@@ -131,6 +153,14 @@ function handlePreviewChange(next: CardPreviewData) {
   }
 }
 
+function handleInvalidLinks() {
+  hasInvalidLinks.value = true
+}
+
+function handleLinksValid() {
+  hasInvalidLinks.value = false
+}
+
 async function handleSave() {
   if (isSaving.value) return
   const instance = customizeCardRef.value
@@ -143,6 +173,8 @@ async function handleSave() {
     })
     return
   }
+
+  await nextTick()
 
   const snapshot = instance.getStateSnapshot()
   const parsed = cardSchema.safeParse(snapshot)
@@ -159,6 +191,21 @@ async function handleSave() {
 
   const { basic, links, customization } = parsed.data
 
+  const parsePersistedId = (id?: string | number) => {
+    if (typeof id === 'number') {
+      return id
+    }
+
+    if (typeof id === 'string') {
+      const numeric = Number(id)
+      if (!Number.isNaN(numeric)) {
+        return numeric
+      }
+    }
+
+    return undefined
+  }
+
   const cardPayload = {
     displayName: basic.name.trim(),
     title: basic.title?.trim() || undefined,
@@ -172,13 +219,24 @@ async function handleSave() {
 
   const formattedLinks = links
     .map((link, index) => ({
-      id: typeof link.id === 'number' ? link.id : undefined,
+      id: parsePersistedId(link.id),
       type: link.type,
       label: link.label?.trim() || undefined,
       value: link.value?.trim() || '',
       position: index
     }))
     .filter(link => link.value.length > 0)
+
+  if (hasInvalidLinks.value || (!formattedLinks.length && links.length > 0)) {
+    toast.add({
+      title: 'Missing link details',
+      description: 'Please enter the URL for each selected link before saving.',
+      color: 'error'
+    })
+    hasInvalidLinks.value = true
+    isSaving.value = false
+    return
+  }
 
   const appearanceConfig: Record<string, string> = {}
   if (customization.color) {
@@ -349,6 +407,8 @@ const items = computed(() => [
           @remove-link="handleRemoveLink"
           @template-change="handleTemplateChange"
           @preview-change="handlePreviewChange"
+          @invalid-links-detected="handleInvalidLinks"
+          @links-valid="handleLinksValid"
         />
       </UPageGrid>
     </template>

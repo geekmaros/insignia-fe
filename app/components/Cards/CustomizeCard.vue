@@ -172,6 +172,16 @@ watch(el, (element) => {
     stop()
   }
 }, { immediate: true })
+
+const getStateSnapshot = () => ({
+  basic: { ...state.basic },
+  links: state.links.map(link => ({ ...link })),
+  customization: { ...state.customization }
+})
+
+defineExpose({
+  getStateSnapshot
+})
 </script>
 
 <template>

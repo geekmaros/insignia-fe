@@ -13,11 +13,12 @@ export type CardLinkType
     | 'link'
 
 export interface CardLink {
-  id: string
+  id: number
   type: CardLinkType
-  label: string
-  url: string
-  order?: number
+  label?: string
+  value: string
+  position?: number
+  isActive?: boolean
 }
 
 export interface CardAppearanceConfig {
@@ -35,28 +36,36 @@ export interface CardAppearance {
 }
 
 export interface Card {
-  id: string
-  name: string
-  title: string
+  id: number
+  displayName: string
+  title?: string
   company?: string
-  email?: string
-  phone?: string
-  location?: string
+  prefix?: string
+  suffix?: string
+  accreditation?: string
+  department?: string
+  headline?: string
   slug: string
   links: CardLink[]
   appearance?: CardAppearance
+  isPublic?: boolean
+  isActive?: boolean
   createdAt?: string
   updatedAt?: string
 }
 
 export interface CardPayload {
-  name: string
-  title: string
+  displayName: string
+  slug: string
+  title?: string
+  prefix?: string
+  suffix?: string
+  accreditation?: string
+  department?: string
   company?: string
-  email?: string
-  phone?: string
-  location?: string
-  description?: string
+  headline?: string
+  isPublic?: boolean
+  isActive?: boolean
 }
 
 export interface CardFilters {

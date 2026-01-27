@@ -2,16 +2,24 @@ import { useApi } from '@/composables/useApi'
 import type { CardLink } from '@/types/cards'
 
 export interface LinkPayload {
+  id?: number
   type: CardLink['type']
-  label: string
-  url: string
-  order?: number
+  label?: string
+  value: string
+  position?: number
 }
 
 export function addLink(cardId: string, payload: LinkPayload) {
   return useApi<CardLink>(`/cards/${cardId}/links`, {
     method: 'POST',
     body: payload
+  })
+}
+
+export function replaceLinks(cardId: string, links: LinkPayload[]) {
+  return useApi<CardLink[]>(`/cards/${cardId}/links`, {
+    method: 'PUT',
+    body: { links }
   })
 }
 
@@ -28,9 +36,9 @@ export function removeLink(cardId: string, linkId: string) {
   })
 }
 
-export function reorderLinks(cardId: string, orderedIds: string[]) {
+export function reorderLinks(cardId: string, orderedLinkIds: number[]) {
   return useApi<CardLink[]>(`/cards/${cardId}/links/reorder`, {
-    method: 'POST',
-    body: { orderedIds }
+    method: 'PATCH',
+    body: { orderedLinkIds }
   })
 }

@@ -2,7 +2,7 @@
 import { computed, watch, watchEffect } from 'vue'
 import type { z } from 'zod'
 import { cardSchema } from '~/schema/card.schema'
-import { getMyCard, updateCard } from '@/services/cards.service'
+import { deleteCard, getMyCard, updateCard } from '@/services/cards.service'
 import { replaceLinks } from '@/services/cardLinks.service'
 import { updateCardAppearance } from '@/services/cardAppearance.service'
 import { resolveErrorMessage } from '~/utils/resolveErrorMessage'
@@ -35,6 +35,7 @@ const customizeCardRef = ref<{
   setStateSnapshot: (next: Partial<CardFormState>) => void
 } | null>(null)
 const isSaving = ref(false)
+const isDeleting = ref(false)
 const hasInvalidLinks = ref(false)
 
 const { data: cardData, pending, error, refresh } = await useAsyncData('card-edit', () => getMyCard(cardId.value), {
@@ -159,6 +160,39 @@ function handleInvalidLinks() {
 
 function handleLinksValid() {
   hasInvalidLinks.value = false
+}
+
+async function handleDelete() {
+  if (isDeleting.value) return
+
+  if (import.meta.client) {
+    const confirmed = window.confirm('Are you sure you want to delete this card? This action cannot be undone.')
+    if (!confirmed) {
+      return
+    }
+  }
+
+  try {
+    isDeleting.value = true
+    await deleteCard(cardId.value)
+
+    toast.add({
+      title: 'Card deleted',
+      description: 'The card has been removed.',
+      color: 'success'
+    })
+
+    await router.push('/app/cards')
+  } catch (error) {
+    const message = resolveErrorMessage(error, 'Unable to delete card. Please try again.')
+    toast.add({
+      title: 'Delete failed',
+      description: message,
+      color: 'error'
+    })
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 async function handleSave() {
@@ -336,6 +370,18 @@ const items = computed(() => [
             :loading="isSaving"
             :disabled="isSaving || pending || !!error"
             @click="handleSave"
+          />
+
+          <UButton
+            color="error"
+            variant="outline"
+            class="text-gray-950"
+            size="lg"
+            icon="i-lucide-trash"
+            label="Delete Card"
+            :loading="isDeleting"
+            :disabled="isSaving || isDeleting"
+            @click="handleDelete"
           />
 
           <UButton

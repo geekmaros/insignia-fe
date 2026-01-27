@@ -294,7 +294,10 @@ const items = computed(() => [
     </template>
 
     <template #body>
-      <div v-if="error" class="p-6">
+      <div
+        v-if="error"
+        class="p-6"
+      >
         <UAlert
           color="error"
           title="Unable to load card"
@@ -303,22 +306,29 @@ const items = computed(() => [
         />
       </div>
 
-      <div v-else-if="pending" class="p-6 space-y-4">
+      <div
+        v-else-if="pending"
+        class="p-6 space-y-4"
+      >
         <USkeleton class="h-32 rounded-2xl" />
         <USkeleton class="h-48 rounded-2xl" />
       </div>
 
-      <UPageGrid v-else class="gap-0 h-full">
+      <UPageGrid
+        v-else
+        class="gap-0 items-start grid-cols-1 xl:grid-cols-[430px_minmax(0,1fr)_430px]"
+      >
         <CardsAddLinks
           :selected-links="selectedLinks"
           @update:selected-links="handleSelectedLinksUpdate"
         />
 
         <UPageCard
-          class="rounded-none flex flex-col"
+          class="rounded-none flex flex-col h-full"
           :ui="{
-            header: 'border-b border-[#E7E7E7] px-6 py-4',
-            body: 'p-6 flex justify-center'
+            container: 'px-0 sm:px-0 h-full',
+            header: 'font-medium text-gray-950 text-sm capitalize border-b border-[#e7e7e7] w-full px-6 pb-3',
+            body: 'px-3 w-full '
           }"
         >
           <template #header>

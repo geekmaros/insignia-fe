@@ -30,8 +30,10 @@ export const useAuthStore = defineStore('auth', () => {
         withAuth: false
       })
 
-      accessToken.value = response.accessToken
-      user.value = response.user
+      if (response && typeof response === 'object' && 'accessToken' in response) {
+        accessToken.value = response.accessToken
+        user.value = response.user
+      }
 
       return response
     } finally {
@@ -48,8 +50,10 @@ export const useAuthStore = defineStore('auth', () => {
         withAuth: false
       })
 
-      accessToken.value = response.accessToken
-      user.value = response.user
+      if (response && typeof response === 'object' && 'accessToken' in response) {
+        accessToken.value = response.accessToken
+        user.value = response.user
+      }
 
       return response
     } finally {
@@ -65,7 +69,9 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const profile = await useApi<AuthUser>('/users/profile/me')
-      user.value = profile
+      if (profile && typeof profile === 'object' && 'id' in profile) {
+        user.value = profile
+      }
       return profile
     } finally {
       loading.value = false

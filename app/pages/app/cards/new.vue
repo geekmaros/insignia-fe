@@ -243,14 +243,14 @@ const items = ref([
     <template
       #body
     >
-      <UPageGrid class="gap-0 h-full">
+      <UPageGrid class="gap-0 items-start grid-cols-1 xl:grid-cols-[430px_minmax(0,1fr)_430px]">
         <CardsAddLinks
           :selected-links="selectedLinks"
           @update:selected-links="handleSelectedLinksUpdate"
         />
 
         <UPageCard
-          class="rounded-none flex flex-col"
+          class="rounded-none flex flex-col h-full"
           :ui="{
             container: 'px-0 sm:px-0 h-full',
             header: 'font-medium text-gray-950 text-sm capitalize border-b border-[#e7e7e7] w-full px-6 pb-3',

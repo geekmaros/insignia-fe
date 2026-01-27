@@ -252,8 +252,10 @@ const items = ref([
         <UPageCard
           class="rounded-none flex flex-col"
           :ui="{
-            header: 'border-b border-[#E7E7E7] px-6 py-4',
-            body: 'p-6 flex justify-center'
+            container: 'px-0 sm:px-0 h-full',
+            header: 'font-medium text-gray-950 text-sm capitalize border-b border-[#e7e7e7] w-full px-6 pb-3',
+            body: 'px-3 w-full '
+
           }"
         >
           <template #header>

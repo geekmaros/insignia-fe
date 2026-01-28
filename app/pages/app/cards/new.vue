@@ -28,7 +28,6 @@ const customizeCardRef = ref<{ getStateSnapshot: () => CardFormState } | null>(n
 const isPublishing = ref(false)
 const toast = useToast()
 const router = useRouter()
-const hasInvalidLinks = ref(false)
 
 const previewCard = computed<CardPreviewData>(() => ({
   basic: previewState.value.basic,
@@ -84,8 +83,6 @@ async function handlePublish() {
   const snapshot = instance.getStateSnapshot()
   const parsed = cardSchema.safeParse(snapshot)
 
-  console.log(parsed)
-
   if (!parsed.success) {
     const firstIssue = parsed.error.issues[0]
     toast.add({
@@ -97,6 +94,18 @@ async function handlePublish() {
   }
 
   const { basic, links, customization } = parsed.data
+
+  const hasIncompleteLink = links.some(link => !link.value?.trim())
+  if (hasIncompleteLink) {
+    toast.add({
+      title: 'Missing link details',
+      description: 'Please enter the URL for each selected link before publishing.',
+      color: 'error'
+    })
+    isPublishing.value = false
+    return
+  }
+
   const finalSlug = slugify(basic.name) || `card-${Date.now()}`
 
   const cardPayload = {
@@ -122,17 +131,6 @@ async function handlePublish() {
       position: index
     }))
     .filter(link => link.value.length > 0)
-
-  if (hasInvalidLinks.value || (!linkPayloads.length && links.length > 0)) {
-    toast.add({
-      title: 'Missing link details',
-      description: 'Please enter the URL for each selected link before publishing.',
-      color: 'error'
-    })
-    hasInvalidLinks.value = true
-    isPublishing.value = false
-    return
-  }
 
   const appearanceConfig: Record<string, string> = {}
   if (customization.color) {
@@ -290,8 +288,6 @@ const items = ref([
           @remove-link="handleRemoveLink"
           @template-change="handleTemplateChange"
           @preview-change="handlePreviewChange"
-          @invalid-links-detected="handleInvalidLinks"
-          @links-valid="handleLinksValid"
         />
       </UPageGrid>
     </template>
@@ -301,10 +297,3 @@ const items = ref([
 <style scoped>
 
 </style>
-function handleInvalidLinks() {
-  hasInvalidLinks.value = true
-}
-
-function handleLinksValid() {
-  hasInvalidLinks.value = false
-}

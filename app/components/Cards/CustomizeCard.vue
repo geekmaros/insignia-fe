@@ -42,8 +42,6 @@ const emit = defineEmits<{
   (event: 'remove-link', id: string | number): void
   (event: 'template-change', template: CardTemplate): void
   (event: 'preview-change', preview: CardPreviewData): void
-  (event: 'invalid-links-detected'): void
-  (event: 'links-valid'): void
 }>()
 
 const selectedLinkOptions = computed<SelectedLinkOption[]>(() => props.selectedLinks ?? [])
@@ -125,26 +123,6 @@ watch(
     state.links.splice(0, state.links.length, ...nextLinks)
   },
   { immediate: true, deep: true } // ✅ THIS
-)
-
-const linksValid = ref(true)
-
-watch(
-  () => state.links,
-  (currentLinks) => {
-    const hasEmpty = currentLinks.some(link => !link.value?.trim())
-    if (hasEmpty !== linksValid.value) {
-      linksValid.value = !hasEmpty
-
-      if (hasEmpty) {
-        emit('invalid-links-detected')
-      }
-      else {
-        emit('links-valid')
-      }
-    }
-  },
-  { deep: true }
 )
 
 const templateFallback: CardTemplate = 'classic'

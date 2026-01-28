@@ -36,7 +36,6 @@ const customizeCardRef = ref<{
 } | null>(null)
 const isSaving = ref(false)
 const isDeleting = ref(false)
-const hasInvalidLinks = ref(false)
 
 const { data: cardData, pending, error, refresh } = await useAsyncData('card-edit', () => getMyCard(cardId.value), {
   watch: [cardId]
@@ -154,14 +153,6 @@ function handlePreviewChange(next: CardPreviewData) {
   }
 }
 
-function handleInvalidLinks() {
-  hasInvalidLinks.value = true
-}
-
-function handleLinksValid() {
-  hasInvalidLinks.value = false
-}
-
 async function handleDelete() {
   if (isDeleting.value) return
 
@@ -240,6 +231,17 @@ async function handleSave() {
     return undefined
   }
 
+  const hasIncompleteLink = links.some(link => !link.value?.trim())
+  if (hasIncompleteLink) {
+    toast.add({
+      title: 'Missing link details',
+      description: 'Please enter the URL for each selected link before saving.',
+      color: 'error'
+    })
+    isSaving.value = false
+    return
+  }
+
   const cardPayload = {
     displayName: basic.name.trim(),
     title: basic.title?.trim() || undefined,
@@ -260,17 +262,6 @@ async function handleSave() {
       position: index
     }))
     .filter(link => link.value.length > 0)
-
-  if (hasInvalidLinks.value || (!formattedLinks.length && links.length > 0)) {
-    toast.add({
-      title: 'Missing link details',
-      description: 'Please enter the URL for each selected link before saving.',
-      color: 'error'
-    })
-    hasInvalidLinks.value = true
-    isSaving.value = false
-    return
-  }
 
   const appearanceConfig: Record<string, string> = {}
   if (customization.color) {
@@ -453,8 +444,6 @@ const items = computed(() => [
           @remove-link="handleRemoveLink"
           @template-change="handleTemplateChange"
           @preview-change="handlePreviewChange"
-          @invalid-links-detected="handleInvalidLinks"
-          @links-valid="handleLinksValid"
         />
       </UPageGrid>
     </template>
